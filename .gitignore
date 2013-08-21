@@ -2,3 +2,6 @@
 *.prefs
 
 .classpath
+/bin
+
+.DS_Store

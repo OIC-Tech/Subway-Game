@@ -1,45 +1,71 @@
 package game;
 
+import static utility.util.loadTexture;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import org.lwjgl.input.Mouse;
+import level.Level;
+import level.LevelList;
+import level.Level_01;
 
-import entity.BlockGrid;
-import entity.BlockType;
-import entity.World;
+import org.newdawn.slick.opengl.Texture;
+
+// 38 pixel >> 1 meter
 
 public class Game implements GameState {
 
-	BlockGrid grid;
+	private LevelList levelInfo = LevelList.LEVEL_01;
+	private Level level;
 
-	public Game() throws FileNotFoundException, IOException {
-		grid = new BlockGrid();
+	Texture fg;
+	Texture mg;
+	Texture bg;
+
+	public Game() throws FileNotFoundException,
+			IOException {
+		setLevel(levelInfo);
+	}
+
+	public void setLevel(LevelList levelInfo)
+			throws FileNotFoundException,
+			IOException {
+
+		this.levelInfo = levelInfo;
+
+		fg = loadTexture(levelInfo.fgLocation);
+		mg = loadTexture(levelInfo.mgLocation);
+		bg = loadTexture(levelInfo.bgLocation);
+
+		switch (levelInfo) {
+		case LEVEL_01: {
+			level = new Level_01(
+					levelInfo.fgLocation,
+					levelInfo.mgLocation,
+					levelInfo.bgLocation,
+					levelInfo.girlTexture);
+		}
+
+		}
+
+		level.setFgCoord(levelInfo.fgCoord);
+		level.setMgCoord(levelInfo.mgCoord);
+		level.setBgCoord(levelInfo.bgCoord);
+		level.setupMap();
 
 	}
 
-	public void logic() throws FileNotFoundException, IOException {
-
-		int mouseX = Mouse.getX() - 1;
-		int mouseY = World.SCREEN_HEIGHT - Mouse.getY() - 1;
-		boolean rightMouseClicked = Mouse.isButtonDown(1);
-		boolean leftMouseClicked = Mouse.isButtonDown(0);
-		if (rightMouseClicked) {
-			int mouseGridX = Math.round(mouseX / World.BLOCK_SIZE);
-			int mouseGridY = Math.round(mouseY / World.BLOCK_SIZE);
-			System.out.println(mouseGridX + ", " + mouseGridY);
-			grid.setBlock(mouseGridX, mouseGridY, BlockType.STONE);
-		}
-		if (leftMouseClicked) {
-			int mouseGridX = Math.round(mouseX / World.BLOCK_SIZE);
-			int mouseGridY = Math.round(mouseY / World.BLOCK_SIZE);
-			System.out.println(mouseGridX + ", " + mouseGridY);
-			grid.setBlock(mouseGridX, mouseGridY, BlockType.AIR);
-		}
-	}
-	
+	@Override
 	public void draw() {
-		grid.draw();
+		level.draw();
+	}
+
+	@Override
+	public void step()
+			throws FileNotFoundException,
+			IOException {
+		level.step(Boot.currentDelta);
+
 	}
 
 }

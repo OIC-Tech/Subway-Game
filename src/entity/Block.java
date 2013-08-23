@@ -1,6 +1,7 @@
 package entity;
 
-import static entity.World.*;
+import static game.WorldSettings.*;
+import game.WorldSettings;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -59,11 +60,11 @@ public class Block {
 		glTexCoord2f(0, 0); 
 		glVertex2f(0, 0);
 		glTexCoord2f(1, 0);
-		glVertex2f(World.BLOCK_SIZE, 0);
+		glVertex2f(WorldSettings.BLOCK_SIZE, 0);
 		glTexCoord2f(1, 1);
-		glVertex2f(World.BLOCK_SIZE, World.BLOCK_SIZE);
+		glVertex2f(WorldSettings.BLOCK_SIZE, WorldSettings.BLOCK_SIZE);
 		glTexCoord2f(0, 1);
-		glVertex2f(0, World.BLOCK_SIZE);
+		glVertex2f(0, WorldSettings.BLOCK_SIZE);
 		glEnd();
         glPopMatrix();
 	}

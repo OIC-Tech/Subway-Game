@@ -1,6 +1,6 @@
 package entity;
 
-public interface ClickableEntity extends Entity {
+public interface InterfaceClickableEntity extends InterfaceEntity {
 	public boolean isClicked(int mouseX, int mouseY);
 	
 }

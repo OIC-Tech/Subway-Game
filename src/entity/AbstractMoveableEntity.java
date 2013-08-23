@@ -2,7 +2,7 @@ package entity;
 
 import org.newdawn.slick.opengl.Texture;
 
-public abstract class AbstractMoveableEntity extends AbstractEntity implements MoveableEntity {
+public abstract class AbstractMoveableEntity extends AbstractEntity implements InterfaceMoveableEntity {
 	
 
 	public AbstractMoveableEntity(float x, float y, float width, float height, Texture texture) {

@@ -18,7 +18,6 @@ import utility.GameStates;
 import entity.BlockGrid;
 import entity.BlockType;
 import entity.Button;
-import entity.World;
 import static org.lwjgl.opengl.GL11.*;
 
 public class Menu implements GameState {
@@ -59,8 +58,8 @@ public class Menu implements GameState {
 	}
 
 	@Override
-	public void logic() throws FileNotFoundException, IOException {
-		if (startButton.isClicked(Mouse.getX(), World.SCREEN_HEIGHT - Mouse.getY())) {
+	public void step() throws FileNotFoundException, IOException {
+		if (startButton.isClicked(Mouse.getX(), WorldSettings.SCREEN_HEIGHT - Mouse.getY())) {
 			Boot.state = GameStates.GAME;
 		}
 

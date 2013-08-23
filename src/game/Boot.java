@@ -11,24 +11,22 @@ import org.lwjgl.opengl.*;
 import utility.GameStates;
 import entity.BlockGrid;
 import entity.BlockType;
-import entity.World;
 import static org.lwjgl.opengl.GL11.*;
 
 public class Boot {
 
 	/** time at last frame */
-	long lastFrame;
+	public static long lastFrame;
 
 	/** frames per second */
-	int fps;
+	public static int fpsCount;
 	/** last FPS time */
-	long lastFPS;
-
+	public static long lastFPSTime;
+	public static int currentFPS;
+	public static float currentDelta;
 	private GameState game;
 	private GameState menu;
 	public static GameStates state = GameStates.MENU;
-
-	private boolean fullscreen = false;
 
 	private void update() {
 
@@ -39,12 +37,12 @@ public class Boot {
 		// TODO
 		switch (state) {
 		case GAME: {
-			game.logic();
+			game.step();
 		}
 		case INTRO:
 			break;
 		case MENU:
-			menu.logic();
+			menu.step();
 			break;
 		case SETTINGS:
 			break;
@@ -82,14 +80,14 @@ public class Boot {
 			DisplayMode[] modes = Display.getAvailableDisplayModes();
 
 			for (int i = 0; i < modes.length; i++) {
-				if (modes[i].getWidth() == World.SCREEN_WIDTH && modes[i].getHeight() == World.SCREEN_HEIGHT && modes[i].isFullscreenCapable()) {
+				if (modes[i].getWidth() == WorldSettings.SCREEN_WIDTH && modes[i].getHeight() == WorldSettings.SCREEN_HEIGHT && modes[i].isFullscreenCapable()) {
 					displayMode = modes[i];
 					break;
 				}
 			}
 
 			Display.setDisplayMode(displayMode);
-			Display.setFullscreen(fullscreen);
+			Display.setFullscreen(WorldSettings.FULLSCREEN);
 			Display.create();
 
 		} catch (LWJGLException e) {
@@ -101,7 +99,7 @@ public class Boot {
 	private void setupOpenGL() {
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		glOrtho(0, World.SCREEN_WIDTH, World.SCREEN_HEIGHT, 0, 1, -1);
+		glOrtho(0, WorldSettings.SCREEN_WIDTH, WorldSettings.SCREEN_HEIGHT, 0, 1, -1);
 		glMatrixMode(GL_MODELVIEW);
 		glEnable(GL_TEXTURE_2D);
 		glEnable(GL_BLEND);
@@ -121,8 +119,8 @@ public class Boot {
 	}
 
 	private void setupTimer() {
-		getDelta(); // call once before loop to initialize lastFrame
-		lastFPS = getTime(); // call before loop to initialize FPS timer
+		updateDelta(); // call once before loop to initialize lastFrame
+		lastFPSTime = getTime(); // call before loop to initialize FPS timer
 
 	}
 
@@ -137,8 +135,8 @@ public class Boot {
 	public Boot() throws LWJGLException, FileNotFoundException, IOException {
 		setupDisplay();
 		setupOpenGL();
-		setupEntities();
 		setupTimer();
+		setupEntities();
 
 		boolean isRunning = true;
 
@@ -153,6 +151,7 @@ public class Boot {
 			logic();
 			update();
 			updateFPS();
+			updateDelta();
 
 			Display.update();
 			Display.sync(60);
@@ -162,24 +161,34 @@ public class Boot {
 
 	}
 
-	public long getTime() {
+
+
+	public static void updateDelta() {
+		long time = getTime();
+		currentDelta = (time - lastFrame);
+		lastFrame = time;
+		
+	}
+
+	/**
+	 * Get the accurate system time
+	 * 
+	 * @return The system time in milliseconds
+	 */
+	public static long getTime() {
 		return (Sys.getTime() * 1000) / Sys.getTimerResolution();
 	}
 
-	public int getDelta() {
-		long time = getTime();
-		int delta = (int) (time - lastFrame);
-		lastFrame = time;
-
-		return delta;
-	}
-
-	public void updateFPS() {
-		if (getTime() - lastFPS > 1000) {
-			Display.setTitle("FPS: " + fps);
-			fps = 0;
-			lastFPS += 1000;
+	/**
+	 * Calculate the FPS and set it in the title bar
+	 */
+	public static void updateFPS() {
+		if (getTime() - lastFPSTime > 1000) {
+			currentFPS = fpsCount;
+			fpsCount = 0;
+			lastFPSTime += 1000;
 		}
-		fps++;
+		fpsCount++;
 	}
+
 }

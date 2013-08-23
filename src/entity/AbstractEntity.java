@@ -10,7 +10,7 @@ import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureLoader;
 
 
-public abstract class AbstractEntity implements Entity {
+public abstract class AbstractEntity implements InterfaceEntity {
 
 	protected float x;
 	protected float y;
@@ -48,7 +48,7 @@ public abstract class AbstractEntity implements Entity {
 	}
 
 	@Override
-	public boolean intersects(Entity other) {
+	public boolean intersects(InterfaceEntity other) {
 		collisionBox.setBounds((int) x, (int) y, (int) width, (int) height);
 		return collisionBox.intersects(other.getX(), other.getY(), other.getWidth(), other.getHeigth());
 	}

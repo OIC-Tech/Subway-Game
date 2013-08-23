@@ -1,6 +1,6 @@
 package entity;
 
-import static entity.World.*;
+import static game.WorldSettings.*;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

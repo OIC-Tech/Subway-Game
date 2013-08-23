@@ -3,7 +3,7 @@ package entity;
 import org.lwjgl.input.Mouse;
 import org.newdawn.slick.opengl.Texture;
 
-public abstract class AbstractClickableEntity extends AbstractEntity implements ClickableEntity {
+public abstract class AbstractClickableEntity extends AbstractEntity implements InterfaceClickableEntity {
 
 	public AbstractClickableEntity(float x, float y, float width, float height) {
 		super(x, y, width, height);

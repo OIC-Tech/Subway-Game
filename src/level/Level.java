@@ -14,8 +14,6 @@ public interface Level {
 	public void drawMG(float[] coord);
 
 	public void drawBG(float[] coord);
-	
-	public void drawGirl(Vec2 position, int frame);
 
 	public float[] getFgCoord();
 
@@ -32,11 +30,11 @@ public interface Level {
 	public Body[] getMap();
 
 	public void setMap(Body[] map);
-	
+
 	public void step(float delta);
 
 	public void setupMap();
-	
+
 	public World getWorld();
-	
+
 }

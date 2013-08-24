@@ -10,5 +10,5 @@ public class WorldSettings {
 	public static final World world = new World(new Vec2(0, -9.8f));
 	public static final int meterToPixel = 40;
 
-	public static final boolean FULLSCREEN = true;
+	public static final boolean FULLSCREEN = false;
 }

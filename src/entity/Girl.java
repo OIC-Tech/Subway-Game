@@ -73,17 +73,18 @@ public class Girl implements InterfaceHuman {
 		body.setFixedRotation(true);
 		body.setUserData("girl");
 
-		BodyDef footSensorDef = new BodyDef();
-		footSensorDef.position.set(x, y - (10 / MTPRatio));
-		footSensorDef.type = BodyType.STATIC;
-		PolygonShape footSensorShape = new PolygonShape();
-		footSensorShape.setAsBox(girlXRadius, girlYRadius);
-		body = world.createBody(footSensorDef);
-		FixtureDef footSensorFixture = new FixtureDef();
-		footSensorFixture.shape = footSensorShape;
-		body.createFixture(footSensorFixture);
-		body.setFixedRotation(true);
-		body.setUserData("footSensor");
+		// BodyDef footSensorDef = new BodyDef();
+		// footSensorDef.position.set(x, y - (10 / MTPRatio));
+		// footSensorDef.type = BodyType.STATIC;
+		// PolygonShape footSensorShape = new PolygonShape();
+		// footSensorShape.setAsBox(girlXRadius, girlYRadius);
+		// body = world.createBody(footSensorDef);
+		// FixtureDef footSensorFixture = new FixtureDef();
+		// footSensorFixture.shape = footSensorShape;
+		// footSensorFixture.isSensor = true;
+		// body.createFixture(footSensorFixture);
+		// body.setFixedRotation(true);
+		// body.setUserData("footSensor");
 	}
 
 	@Override
@@ -97,11 +98,10 @@ public class Girl implements InterfaceHuman {
 				final Fixture figureB = contact.getFixtureB();
 
 				if (figureA.getBody().getUserData() != null && figureB.getBody().getUserData() != null) {
-					if ((figureA.getBody().getUserData().equals("footSensor") && figureB.getBody().getUserData()
-							.equals(
-									"floor"))
+					if ((figureA.getBody().getUserData().equals("girl") && figureB.getBody().getUserData()
+							.equals("floor"))
 							|| (figureA.getBody().getUserData().equals("floor") && figureB.getBody().getUserData()
-									.equals("footSensor"))) {
+									.equals("girl"))) {
 						state = HumanStates.STAND;
 					}
 				}
@@ -175,7 +175,7 @@ public class Girl implements InterfaceHuman {
 		float drawX = 106.5f;
 		float drawY = 106.5f;
 
-		Vec2 position = new Vec2(x, y);
+		Vec2 position = body.getPosition();
 
 		glPushMatrix();
 		glLoadIdentity();
@@ -216,6 +216,7 @@ public class Girl implements InterfaceHuman {
 		body.setLinearVelocity(new Vec2(-walkForce, body.getLinearVelocity().y));
 
 	}
+
 	public Texture[] getStandAnimation() {
 		return standAnimation;
 	}
@@ -321,7 +322,7 @@ public class Girl implements InterfaceHuman {
 
 	@Override
 	public void step() {
-		footSensor.setTransform(body.getPosition(), body.getAngle());
+		// footSensor.setTransform(body.getPosition(), body.getAngle());
 
 	}
 

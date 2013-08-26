@@ -40,6 +40,7 @@ public class Game implements GameState {
 		switch (levelInfo) {
 		case LEVEL_01: {
 			level = new Level_01(
+					1280, 800,
 					levelInfo.fgLocation,
 					levelInfo.mgLocation,
 					levelInfo.bgLocation,

@@ -1,6 +1,5 @@
 package level;
 
-import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.World;
 
@@ -8,12 +7,6 @@ public interface Level {
 	public void reset();
 
 	public void draw();
-
-	public void drawFG(float[] coord);
-
-	public void drawMG(float[] coord);
-
-	public void drawBG(float[] coord);
 
 	public float[] getFgCoord();
 

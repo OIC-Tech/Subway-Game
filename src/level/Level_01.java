@@ -24,7 +24,10 @@ import org.jbox2d.dynamics.FixtureDef;
 import org.jbox2d.dynamics.World;
 import org.lwjgl.input.Keyboard;
 
+import utility.Camera;
+import static utility.MapComponents.*;
 import entity.Girl;
+import game.WorldSettings;
 
 public class Level_01 extends AbstractLevel {
 
@@ -35,9 +38,12 @@ public class Level_01 extends AbstractLevel {
 	// private Set<Body> map = new HashSet<Body>();
 	private Girl girl;
 
-	public Level_01(String fgLocation, String mgLocation, String bgLocation, String girlLocation)
+	private Camera camera;
+
+	public Level_01(float width, float height, String fgLocation, String mgLocation, String bgLocation,
+			String girlLocation)
 			throws FileNotFoundException, IOException {
-		super(fgLocation, mgLocation, bgLocation, new World(new Vec2(0, 9.8f)), girlLocation);
+		super(width, height, fgLocation, mgLocation, bgLocation, new World(new Vec2(0, 9.8f)), girlLocation);
 
 	}
 
@@ -46,6 +52,7 @@ public class Level_01 extends AbstractLevel {
 		girl = new Girl(2f, 15f, girlXRadius, girlYRadius, getWorld());
 		girl.setStandAnimation(girlTextures);
 		girl.setInAirAnimation(girlTextures);
+		girl.setWalkAnimation(girlTextures);
 		getWorld().setContactListener(girl.getContactListener());
 
 		// BodyDef boxDef = new BodyDef();
@@ -72,23 +79,36 @@ public class Level_01 extends AbstractLevel {
 		groundFixture.friction = 1.5f;
 		groundFixture.shape = groundShape;
 		ground.createFixture(groundFixture);
-		ground.setUserData("floor");
+		ground.setUserData(FLOOR);
+
+		camera = new Camera(50, 0, 1280, 800);
 
 	}
 
 	public void draw() {
-		drawBG(getBgCoord());
-		drawMG(getMgCoord());
-		girl.draw();
-		drawFG(getFgCoord());
+		// xOffset = (-girl.getX() * MTPRatio) + WorldSettings.SCREEN_WIDTH / 2;
+		// yOffset = (-girl.getY() * MTPRatio) + WorldSettings.SCREEN_HEIGHT /
+		// 2;
+
+		/*
+		 * float cameraX = (camera.getX()); float cameraY = (camera.getY());
+		 * float girlRenderX = bodyPosition.x - cameraX; float girlRenderY =
+		 * bodyPosition.y - cameraY;
+		 */
+		drawBG();
+		drawMG();
+		girl.draw(camera);
+		drawFG();
 
 	}
 
-	public void drawFG(float[] coord) {
+	public void drawFG() {
+		float xOffset = (getFgCoord()[0]) - camera.getX();
+		float yOffset = (getFgCoord()[1]) - camera.getY();
 		glBindTexture(GL_TEXTURE_2D, fg.getTextureID());
 		glPushMatrix();
 		glLoadIdentity();
-		glTranslatef(coord[0], coord[1], 0);
+		glTranslatef(xOffset, yOffset, 0);
 		glBegin(GL_QUADS);
 		glTexCoord2f(0, 0);
 		glVertex2f(0, 0); // Upper left
@@ -106,11 +126,13 @@ public class Level_01 extends AbstractLevel {
 
 	}
 
-	public void drawMG(float[] coord) {
+	public void drawMG() {
+		float xOffset = (getMgCoord()[0]) - camera.getX();
+		float yOffset = (getMgCoord()[1]) - camera.getY();
 		glBindTexture(GL_TEXTURE_2D, mg.getTextureID());
 		glPushMatrix();
 		glLoadIdentity();
-		glTranslatef(coord[0], coord[1], 0);
+		glTranslatef(xOffset, yOffset, 0);
 		glBegin(GL_QUADS);
 		glTexCoord2f(0, 0);
 		glVertex2f(0, 0); // Upper left
@@ -128,11 +150,13 @@ public class Level_01 extends AbstractLevel {
 
 	}
 
-	public void drawBG(float[] coord) {
+	public void drawBG() {
+		float xOffset = (getBgCoord()[0]) - camera.getX();
+		float yOffset = (getBgCoord()[1]) - camera.getY();
 		glBindTexture(GL_TEXTURE_2D, bg.getTextureID());
 		glPushMatrix();
 		glLoadIdentity();
-		glTranslatef(coord[0], coord[1], 0);
+		glTranslatef(xOffset, yOffset, 0);
 		glBegin(GL_QUADS);
 		glTexCoord2f(0, 0);
 		glVertex2f(0, 0); // Upper left
@@ -156,6 +180,7 @@ public class Level_01 extends AbstractLevel {
 	}
 
 	public void step(float delta) {
+		camera.step(delta, girl.getPosition(), 0.05f);
 		getWorld().step(delta / 1000, 8, 3);
 		girl.step();
 		if (Keyboard.isKeyDown(Keyboard.KEY_D)) {

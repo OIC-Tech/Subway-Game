@@ -13,6 +13,8 @@ import entity.BlockGrid;
 import entity.BlockType;
 import static org.lwjgl.opengl.GL11.*;
 
+import static utility.util.*;
+
 public class Boot {
 
 	/** time at last frame */
@@ -80,7 +82,8 @@ public class Boot {
 			DisplayMode[] modes = Display.getAvailableDisplayModes();
 
 			for (int i = 0; i < modes.length; i++) {
-				if (modes[i].getWidth() == WorldSettings.SCREEN_WIDTH && modes[i].getHeight() == WorldSettings.SCREEN_HEIGHT && modes[i].isFullscreenCapable()) {
+				if (modes[i].getWidth() == WorldSettings.SCREEN_WIDTH
+						&& modes[i].getHeight() == WorldSettings.SCREEN_HEIGHT && modes[i].isFullscreenCapable()) {
 					displayMode = modes[i];
 					break;
 				}
@@ -132,7 +135,7 @@ public class Boot {
 		}
 	}
 
-	public Boot() throws LWJGLException, FileNotFoundException, IOException {
+	public Boot() throws LWJGLException {
 		setupDisplay();
 		setupOpenGL();
 		setupTimer();
@@ -141,43 +144,39 @@ public class Boot {
 		boolean isRunning = true;
 
 		while (isRunning) {
-			if (Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)) {
-				isRunning = false;
-			}
-			if (Display.isCloseRequested()) {
-				isRunning = false;
-			}
-			render();
-			logic();
-			update();
-			updateFPS();
-			updateDelta();
+			try {
+				if (Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)) {
+					isRunning = false;
+				}
+				if (Display.isCloseRequested()) {
+					isRunning = false;
+				}
+				render();
+				logic();
+				update();
+				updateFPS();
+				updateDelta();
 
-			Display.update();
-			Display.sync(60);
+				Display.update();
+				Display.sync(60);
+			} catch (Exception e) {
+				e.printStackTrace();
+				Display.destroy();
+				System.exit(1);
+			}
 		}
 		Display.destroy();
 		System.exit(0);
 
 	}
 
-
-
 	public static void updateDelta() {
 		long time = getTime();
 		currentDelta = (time - lastFrame);
 		lastFrame = time;
-		
 	}
 
-	/**
-	 * Get the accurate system time
-	 * 
-	 * @return The system time in milliseconds
-	 */
-	public static long getTime() {
-		return (Sys.getTime() * 1000) / Sys.getTimerResolution();
-	}
+
 
 	/**
 	 * Calculate the FPS and set it in the title bar

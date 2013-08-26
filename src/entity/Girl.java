@@ -12,6 +12,7 @@ import static org.lwjgl.opengl.GL11.glRotated;
 import static org.lwjgl.opengl.GL11.glTexCoord2f;
 import static org.lwjgl.opengl.GL11.glTranslatef;
 import static org.lwjgl.opengl.GL11.glVertex2f;
+import game.Boot;
 
 import org.jbox2d.callbacks.ContactImpulse;
 import org.jbox2d.callbacks.ContactListener;
@@ -27,10 +28,14 @@ import org.jbox2d.dynamics.World;
 import org.jbox2d.dynamics.contacts.Contact;
 import org.newdawn.slick.opengl.Texture;
 
+import utility.Camera;
+import static utility.MapComponents.*;
+import static utility.util.*;
+
 public class Girl implements InterfaceHuman {
 
 	private enum HumanStates {
-		STAND, WALK, RUN, JUMP, INAIR;
+		STAND, WALK_RIGHT, WALK_LEFT, RUN, JUMP, INAIR, WIN;
 	}
 
 	private Texture[] standAnimation;
@@ -38,11 +43,12 @@ public class Girl implements InterfaceHuman {
 	private Texture[] runAnimation;
 	private Texture[] jumpAnimation;
 	private Texture[] inAirAnimation;
+	private Texture[] successAnimation;
 	// Texture[] glide;
 
 	private int AnimationFrame = 0;
 
-	private float x, y;
+	// private float x, y;
 	private float xRadius, yRadius;
 
 	private HumanStates state = HumanStates.INAIR;
@@ -50,14 +56,18 @@ public class Girl implements InterfaceHuman {
 	private float girlXRadius = 0.53f;
 	private float girlYRadius = 0.8f;
 	private float jumpForce = -5;
-	private float walkForce = 3;
+	private float walkForce = 2.5f;
+	private boolean canJump = false;
+
+	private float walkAnimationFPS = 20f;
 
 	private Body body;
 	private Body footSensor;
+	private long lastFrame;
 
 	public Girl(float x, float y, float xRadius, float yRadius, World world) {
-		this.x = x;
-		this.y = y;
+		// this.x = x;
+		// this.y = y;
 
 		BodyDef girlDef = new BodyDef();
 		girlDef.position.set(x, y);
@@ -67,24 +77,26 @@ public class Girl implements InterfaceHuman {
 		body = world.createBody(girlDef);
 		FixtureDef girlFixture = new FixtureDef();
 		girlFixture.density = 1f;
-		girlFixture.friction = 1f;
+		girlFixture.friction = 0.4f;
 		girlFixture.shape = girlShape;
 		body.createFixture(girlFixture);
 		body.setFixedRotation(true);
-		body.setUserData("girl");
+		body.setUserData(GIRL);
 
-		// BodyDef footSensorDef = new BodyDef();
-		// footSensorDef.position.set(x, y - (10 / MTPRatio));
-		// footSensorDef.type = BodyType.STATIC;
-		// PolygonShape footSensorShape = new PolygonShape();
-		// footSensorShape.setAsBox(girlXRadius, girlYRadius);
-		// body = world.createBody(footSensorDef);
-		// FixtureDef footSensorFixture = new FixtureDef();
-		// footSensorFixture.shape = footSensorShape;
-		// footSensorFixture.isSensor = true;
-		// body.createFixture(footSensorFixture);
-		// body.setFixedRotation(true);
-		// body.setUserData("footSensor");
+		lastFrame = getTime();
+
+		BodyDef footSensorDef = new BodyDef();
+		footSensorDef.position.set(x, y - (10 / MTPRatio));
+		footSensorDef.type = BodyType.DYNAMIC;
+		PolygonShape footSensorShape = new PolygonShape();
+		footSensorShape.setAsBox(girlXRadius, girlYRadius);
+		footSensor = world.createBody(footSensorDef);
+		FixtureDef footSensorFixture = new FixtureDef();
+		footSensorFixture.shape = footSensorShape;
+		footSensorFixture.isSensor = true;
+		footSensor.createFixture(footSensorFixture);
+		footSensor.setFixedRotation(true);
+		footSensor.setUserData(FOOTSENSOR);
 	}
 
 	@Override
@@ -98,11 +110,18 @@ public class Girl implements InterfaceHuman {
 				final Fixture figureB = contact.getFixtureB();
 
 				if (figureA.getBody().getUserData() != null && figureB.getBody().getUserData() != null) {
-					if ((figureA.getBody().getUserData().equals("girl") && figureB.getBody().getUserData()
-							.equals("floor"))
-							|| (figureA.getBody().getUserData().equals("floor") && figureB.getBody().getUserData()
-									.equals("girl"))) {
+					if ((figureA.getBody().getUserData().equals(FOOTSENSOR) && figureB.getBody().getUserData()
+							.equals(FLOOR))
+							|| (figureA.getBody().getUserData().equals(FLOOR) && figureB.getBody().getUserData()
+									.equals(FOOTSENSOR))) {
 						state = HumanStates.STAND;
+						canJump = true;
+					}
+					if ((figureA.getBody().getUserData().equals("girl") && figureB.getBody().getUserData()
+							.equals("exit"))
+							|| (figureA.getBody().getUserData().equals("exit") && figureB.getBody().getUserData()
+									.equals("girl"))) {
+						state = HumanStates.WIN;
 					}
 				}
 			}
@@ -113,11 +132,12 @@ public class Girl implements InterfaceHuman {
 				final Fixture figureB = contact.getFixtureB();
 
 				if (figureA.getBody().getUserData() != null && figureB.getBody().getUserData() != null) {
-					if ((figureA.getBody().getUserData().equals("girl") && figureB.getBody().getUserData().equals(
-							"floor"))
-							|| (figureA.getBody().getUserData().equals("floor") && figureB.getBody().getUserData()
-									.equals("girl"))) {
+					if ((figureA.getBody().getUserData().equals(FOOTSENSOR) && figureB.getBody().getUserData().equals(
+							FLOOR))
+							|| (figureA.getBody().getUserData().equals(FLOOR) && figureB.getBody().getUserData()
+									.equals(FOOTSENSOR))) {
 						state = HumanStates.INAIR;
+						canJump = false;
 					}
 				}
 
@@ -138,13 +158,7 @@ public class Girl implements InterfaceHuman {
 	}
 
 	@Override
-	public void run() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void draw() {
+	public void draw(Camera camera) {
 		switch (state) {
 		case STAND: {
 			glBindTexture(GL_TEXTURE_2D, standAnimation[AnimationFrame].getTextureID());
@@ -162,8 +176,26 @@ public class Girl implements InterfaceHuman {
 			glBindTexture(GL_TEXTURE_2D, runAnimation[AnimationFrame].getTextureID());
 			break;
 		}
-		case WALK: {
+		case WALK_LEFT: {
 			glBindTexture(GL_TEXTURE_2D, walkAnimation[AnimationFrame].getTextureID());
+			if (shouldNextFrame(walkAnimationFPS)) {
+				++AnimationFrame;
+				if (AnimationFrame >= 7) {
+					state = HumanStates.STAND;
+					AnimationFrame = 0;
+				}
+			}
+			break;
+		}
+		case WALK_RIGHT: {
+			glBindTexture(GL_TEXTURE_2D, walkAnimation[AnimationFrame].getTextureID());
+			if (shouldNextFrame(walkAnimationFPS)) {
+				++AnimationFrame;
+				if (AnimationFrame >= 7) {
+					state = HumanStates.STAND;
+					AnimationFrame = 0;
+				}
+			}
 			break;
 		}
 		default: {
@@ -176,11 +208,15 @@ public class Girl implements InterfaceHuman {
 		float drawY = 106.5f;
 
 		Vec2 position = body.getPosition();
-
 		glPushMatrix();
 		glLoadIdentity();
 		Vec2 bodyPosition = position.mul(MTPRatio);
-		glTranslatef(bodyPosition.x - (getGirlXRadius() * 40), bodyPosition.y - (getGirlYRadius() * 40), 0);
+		float cameraX = (camera.getX());
+		float cameraY = (camera.getY());
+		float girlRenderX = bodyPosition.x - cameraX - (girlXRadius * 40);
+		float girlRenderY = bodyPosition.y - cameraY - (girlYRadius * 40);
+		
+		glTranslatef(girlRenderX, girlRenderY, 0);
 		glRotated(Math.toDegrees(body.getAngle()), 0, 0, 1);
 		glBegin(GL_QUADS);
 		glTexCoord2f(0, 0);
@@ -201,20 +237,31 @@ public class Girl implements InterfaceHuman {
 	}
 
 	@Override
+	public void run() {
+		// TODO
+	}
+
+	@Override
 	public void jump() {
-		body.getLinearVelocity().y = jumpForce;
+		if (canJump & !state.equals(HumanStates.WIN)) {
+			body.getLinearVelocity().y = jumpForce;
+		}
 	}
 
 	@Override
 	public void walkRight() {
-		body.setLinearVelocity(new Vec2(walkForce, body.getLinearVelocity().y));
-
+		if (!state.equals(HumanStates.WIN)) {
+			state = HumanStates.WALK_RIGHT;
+			body.setLinearVelocity(new Vec2(walkForce, body.getLinearVelocity().y));
+		}
 	}
 
 	@Override
 	public void walkLeft() {
-		body.setLinearVelocity(new Vec2(-walkForce, body.getLinearVelocity().y));
-
+		if (!state.equals(HumanStates.WIN)) {
+			state = HumanStates.WALK_LEFT;
+			body.setLinearVelocity(new Vec2(-walkForce, body.getLinearVelocity().y));
+		}
 	}
 
 	public Texture[] getStandAnimation() {
@@ -258,19 +305,19 @@ public class Girl implements InterfaceHuman {
 	}
 
 	public float getX() {
-		return x;
+		return body.getPosition().x;
 	}
 
 	public void setX(float x) {
-		this.x = x;
+		body.setTransform(new Vec2(x, body.getPosition().y), body.getAngle());
 	}
 
 	public float getY() {
-		return y;
+		return body.getPosition().y;
 	}
 
 	public void setY(float y) {
-		this.y = y;
+		body.setTransform(new Vec2(body.getPosition().x, y), body.getAngle());
 	}
 
 	public boolean isInAir() {
@@ -322,8 +369,29 @@ public class Girl implements InterfaceHuman {
 
 	@Override
 	public void step() {
-		// footSensor.setTransform(body.getPosition(), body.getAngle());
+		footSensor
+				.setTransform(new Vec2(body.getPosition().x, body.getPosition().y - (10 / MTPRatio)), body.getAngle());
 
+	}
+
+	public boolean isCanJump() {
+		return canJump;
+	}
+
+	public void setCanJump(boolean canJump) {
+		this.canJump = canJump;
+	}
+
+	public boolean shouldNextFrame(float FPS) {
+		if (((1f / FPS) * 1000) < (getTime() - lastFrame)) {
+			lastFrame = getTime();
+			return true;
+		}
+		return false;
+	}
+	
+	public Vec2 getPosition() {
+		return body.getPosition();
 	}
 
 }

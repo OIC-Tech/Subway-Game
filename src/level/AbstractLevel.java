@@ -1,16 +1,5 @@
 package level;
 
-import static org.lwjgl.opengl.GL11.GL_QUADS;
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
-import static org.lwjgl.opengl.GL11.glBegin;
-import static org.lwjgl.opengl.GL11.glBindTexture;
-import static org.lwjgl.opengl.GL11.glEnd;
-import static org.lwjgl.opengl.GL11.glLoadIdentity;
-import static org.lwjgl.opengl.GL11.glPopMatrix;
-import static org.lwjgl.opengl.GL11.glPushMatrix;
-import static org.lwjgl.opengl.GL11.glTexCoord2f;
-import static org.lwjgl.opengl.GL11.glTranslatef;
-import static org.lwjgl.opengl.GL11.glVertex2f;
 import static utility.util.loadTexture;
 
 import java.io.FileNotFoundException;
@@ -28,6 +17,8 @@ public abstract class AbstractLevel implements Level {
 	private float[] bgCoord = new float[2];
 
 	private float[] girlCoord = new float[2];
+	private float width;
+	private float height;
 
 	Texture fg;
 	Texture mg;
@@ -38,15 +29,18 @@ public abstract class AbstractLevel implements Level {
 	private Body[] map;
 	private World world = new World(new Vec2(0, 9.8f));
 
-	public AbstractLevel(String fgLocation, String mgLocation, String bgLocation, World world, String girlLocation)
+	public AbstractLevel(float width, float height, String fgLocation, String mgLocation, String bgLocation, World world,
+			String girlLocation)
 			throws FileNotFoundException, IOException {
+		this.setWidth(width);
+		this.setHeight(height);
 		this.setWorld(world);
 		this.fg = loadTexture(fgLocation);
 		this.mg = loadTexture(mgLocation);
 		this.bg = loadTexture(bgLocation);
 
 		for (int i = 0; i <= 6; i++) {
-			girlTextures[i] = loadTexture(girlLocation + (i+1) + ".png");
+			girlTextures[i] = loadTexture(girlLocation + (i + 1) + ".png");
 		}
 
 	}
@@ -89,5 +83,29 @@ public abstract class AbstractLevel implements Level {
 
 	public void setWorld(World world) {
 		this.world = world;
+	}
+
+	public float[] getGirlCoord() {
+		return girlCoord;
+	}
+
+	public void setGirlCoord(float[] girlCoord) {
+		this.girlCoord = girlCoord;
+	}
+
+	public float getWidth() {
+		return width;
+	}
+
+	public void setWidth(float width) {
+		this.width = width;
+	}
+
+	public float getHeight() {
+		return height;
+	}
+
+	public void setHeight(float height) {
+		this.height = height;
 	}
 }
